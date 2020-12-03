@@ -2,9 +2,10 @@ import argparse
 import pandas as pd
 import numpy as np
 from datetime import datetime
+import string
+import os 
 
 FILTER = ['DOI', 'PMI']
-
 
 def _parse_argument():
     parser = argparse.ArgumentParser(description='Abstract Text Parser')
@@ -54,7 +55,7 @@ def parse_file(filename):
             if line == '\n':
                 white_line = white_line + 1
 
-    return pd.DataFrame(data, columns=['Title', 'Abstract'])
+    return data
 
 
 def _save_csv(dataframe):
@@ -62,7 +63,27 @@ def _save_csv(dataframe):
         f'export-{datetime.now().strftime("%H%M%S")}.csv', sep=';', index=False, header=False)
 
 
+def _save_textfiles(data):
+    """Save abstract dataframe to text files"""
+    for entry in data: 
+        filename = _slugify(entry[0]) + '.txt'
+        save_dir = '/Users/maikelveen/Projects/abstract-analysis/data'
+        path = os.path.join(save_dir, filename)
+        
+        with open(path, 'a') as file:
+            file.write(entry[1])
+
+
+def _slugify(s):
+    s = s.strip()
+    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    filename = ''.join(c for c in s if c in valid_chars)
+    filename = filename.replace(' ', '_')  
+    filename = filename.replace('.', '')
+    return filename[:100]
+
 if __name__ == "__main__":
     filename = _parse_argument()
     data = parse_file(filename)
-    _save_csv(data)
+    #_save_csv(data)
+    _save_textfiles(data)
